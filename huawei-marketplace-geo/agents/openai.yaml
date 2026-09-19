@@ -1,0 +1,4 @@
+interface:
+  display_name: "华为云市场 GEO 创作"
+  short_description: "根据行业主题或用户问题检索云市场商品，创作适合社区发布的文章与问答"
+  default_prompt: "使用 $huawei-marketplace-geo，围绕中小工厂生产进度管理检索适合的云市场商品，生成一篇知乎文章和三条独立问答。"
