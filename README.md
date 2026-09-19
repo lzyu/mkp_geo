@@ -4,4 +4,3 @@
 
 - [使用说明](huawei-marketplace-geo/readme.md)
 - [技能入口](huawei-marketplace-geo/SKILL.md)
-- [下载技能包](huawei-marketplace-geo.zip)
