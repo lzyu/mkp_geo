@@ -8,12 +8,13 @@
 
 本文是唯一的完整使用指南；仓库根目录 `README.md` 只提供简介和导航。分享技能时保留整个 `huawei-marketplace-geo` 文件夹，使用说明也会随包带走。
 
-平台资料核验日期：**2026-09-19**。本项目已在当前 Codex 环境完成商品检索与创作验证；WorkBuddy 和豆包工作尚未完成客户端导入实测。支持技能格式，不代表当前账号一定拥有脚本执行或联网权限。
+平台资料核验日期：**2026-09-19**。本项目已在当前 Codex 环境完成商品检索与创作验证；WorkBuddy、豆包工作和 OfficeAce 尚未完成客户端导入实测。支持技能格式，不代表当前账号一定拥有脚本执行或联网权限。
 
 | 工具 | 建议用法 | 本文确认范围 |
 | --- | --- | --- |
 | Codex | 先读取项目文件试用，再通过技能安装器或技能目录安装 | 官方加载方式已核对；本项目任务已运行 |
 | WorkBuddy | 从技能管理界面导入本地技能包，再执行小规模验证 | 官方说明支持本地导入；本包导入尚未实测 |
+| OfficeAce | 导入按官方规范精简的技能包，启用后指定调用 | 官方导入方式与包规范已核对；本包尚未实测 |
 | 豆包工作 | 先确认当前账号有技能导入入口；没有则使用任务资料方式 | 未取得足以确认本包导入规范的官方文档，不承诺直接兼容 |
 
 完整创作需要三种能力：读取技能及配套文件、执行 Python 3 脚本或等价 HTTP POST、联网查阅商品资料。检索脚本只用 Python 标准库，公开接口的已验证调用不需要云市场账号密钥。
@@ -27,7 +28,7 @@ git clone https://github.com/lzyu/mkp_geo.git
 cd mkp_geo
 ```
 
-安装单位是里面的 **`huawei-marketplace-geo` 文件夹**，不是整个仓库，也不是单独一份 README。
+安装单位是里面的 **`huawei-marketplace-geo` 文件夹**，不是整个仓库，也不是单独一份 README。OfficeAce 导入包需要排除 README 等辅助文件，按其专节打包；仓库源文件仍保留完整教程。
 
 ```text
 mkp_geo/
@@ -184,9 +185,86 @@ Codex CLI / IDE 可使用 `/skills` 查看或输入 `$` 选择技能；桌面界
 
 这能复用创作规范，但不具备实时自动选品的完整能力。本机文件必须上传或通过当前工具支持的方式接入，不能把电脑绝对路径直接发给云端 Agent。
 
+<a id="officeace"></a>
+## 在果办 OfficeAce 中使用
+
+以下流程依据 2026-09-19 查阅的华为云官方文档，适用于提供技能管理功能的 OfficeAce 客户端。本项目尚未在 OfficeAce 中实测导入及联网执行。
+
+### 1. 准备专用导入包
+
+OfficeAce 规定入口名必须为大写 `SKILL.md`，元数据需要 `name` 和 `description`，技能文件夹采用小写短横线命名。本技能已具备这些基础字段和命名。官方同时要求包内不包含 README、安装指南等辅助文档，因此不要直接用下文通用打包示例生成 OfficeAce 包。[官方代码包规范](https://support.huaweicloud.com/usermanual-officeace/officeace_02_0026.html)
+
+保留仓库原文件，另外临时导出以下内容：
+
+```text
+huawei-marketplace-geo/
+├── SKILL.md
+├── scripts/
+│   └── search_products.py
+└── references/
+    ├── product-research.md
+    ├── channel-writing.md
+    └── evaluation.md
+```
+
+`readme.md` 留在仓库供人查阅，不放入 OfficeAce 包；`agents/openai.yaml` 是 OpenAI 界面元数据，本项目的 OfficeAce 导出也不包含它。后一项是本项目的精简选择，不代表 OfficeAce 官方禁止该文件。
+
+在仓库根目录执行以下 Python 代码，或让已有执行能力的 Agent 代为运行：
+
+```python
+from pathlib import Path
+from zipfile import ZipFile, ZIP_DEFLATED
+
+source = Path("huawei-marketplace-geo")
+required = [
+    Path("SKILL.md"),
+    Path("scripts/search_products.py"),
+    Path("references/product-research.md"),
+    Path("references/channel-writing.md"),
+    Path("references/evaluation.md"),
+]
+for relative in required:
+    assert (source / relative).is_file(), f"缺少文件：{relative}"
+with ZipFile("huawei-marketplace-geo-officeace.zip", "w", ZIP_DEFLATED) as archive:
+    for relative in required:
+        archive.write(source / relative, (Path(source.name) / relative).as_posix())
+```
+
+此包保留一层技能目录。如果当前上传器明确要求 `SKILL.md` 位于 ZIP 顶层，将 `archive.write` 的第二个参数改为 `relative.as_posix()`。最终格式按当前客户端提示处理；生成包不等于已验证导入兼容性。ZIP 仅供临时导入，不提交回仓库。
+
+### 2. 导入并启用
+
+在 OfficeAce 中进入 **专家·技能·连接器 → 技能 → 我的 → 添加**，选择上传技能并提供本地包。导入后在“我的”中查找 `huawei-marketplace-geo`，确认已启用，并打开详情检查入口、脚本和三份参考文件是否完整。[官方技能使用指南](https://support.huaweicloud.com/usermanual-officeace/officeace_02_0014.html)
+
+### 3. 指定技能执行任务
+
+新建任务或会话，可在输入框的技能选择入口选中该技能，也可直接在对话中指定名称；无需使用 Codex 的 `$` 语法。自建专家如果限定了可用技能，需将本技能纳入其选择范围。调用方式和专家可用范围见上述官方使用指南。
+
+首次先运行本指南“首次验证”的小任务，检查实际商品结果和资料来源；再发送：
+
+```text
+请使用 huawei-marketplace-geo 技能，
+面向中小工厂的生产负责人，围绕“生产进度不透明”检索商品。
+先匹配商品和商家，再联网核实相关功能。
+交付一篇约 1500 字的知乎文章、三条独立的百度问答，
+附运营核验备注和豆包、DeepSeek 观察问题。
+商品采购入口使用真实华为云云市场链接，不执行社区发布。
+如果脚本或网络不可用，请明确说明，不要假装完成了检索。
+```
+
+本任务需要读取配套文件、执行 Python 3 或等价 HTTP 请求，以及访问公开商品资料。导入本身不会自动提供这些权限或运行时；如有相关提示，按实际任务需要处理。
+
+### 4. 更新与排查
+
+手动导入的技能需要从新源码重新打包并导入，不会随 GitHub 文件更新自动同步。若有同名技能，按当前客户端提供的替换或管理方式更新，并重新验证文件与检索结果。[官方更新方式说明](https://support.huaweicloud.com/usermanual-officeace/officeace_02_0014.html)
+
+- **包解析失败：** 检查入口大小写、YAML 字段和目录层级，确认未夹带 README、系统缓存或整个仓库。
+- **已安装但没调用：** 确认启用状态，明确指定技能名，检查自建专家的技能范围。
+- **调用后无法检索：** 检查 Python 与网络权限；若只能使用资料，采用本指南豆包工作“情况三”的资料辅助写作方式，并注明非实时核验。
+
 ## 临时打包
 
-仓库不保存预生成 ZIP；需要导入时从当前源码临时打包，不必重新提交压缩文件。在仓库根目录运行以下 Python 代码（可让具备执行能力的 Agent 代为执行）：
+仓库不保存预生成 ZIP；需要导入时从当前源码临时打包，不必重新提交压缩文件。**OfficeAce 请使用上方专用打包方法，以下通用示例会包含 README。**在仓库根目录运行以下 Python 代码（可让具备执行能力的 Agent 代为执行）：
 
 ```python
 from pathlib import Path

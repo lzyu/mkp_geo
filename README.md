@@ -10,8 +10,9 @@
 - [Codex 使用方法](huawei-marketplace-geo/readme.md#codex)
 - [WorkBuddy 使用方法](huawei-marketplace-geo/readme.md#workbuddy)
 - [豆包工作使用方法与适配边界](huawei-marketplace-geo/readme.md#doubao-work)
+- [OfficeAce 使用方法](huawei-marketplace-geo/readme.md#officeace)
 - [技能入口与创作规则](huawei-marketplace-geo/SKILL.md)
 
-安装或分享时使用完整的 `huawei-marketplace-geo/` 文件夹。仓库不维护预生成 ZIP，需要导入时按使用指南临时打包。
+分享源码时保留完整的 `huawei-marketplace-geo/` 文件夹；导入 OfficeAce 时按指南导出不含 README 的专用包。仓库不维护预生成 ZIP，需要导入时按使用指南临时打包。
 
 本首页只维护项目概述和导航；详细教程统一维护在 skill 目录中的 `readme.md`，随技能一起分发。
